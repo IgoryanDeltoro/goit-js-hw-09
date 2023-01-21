@@ -1,20 +1,44 @@
-function createPromise(position, delay) {
-  const shouldResolve = Math.random() > 0.3;
-  if (shouldResolve) {
-    // Fulfill
-  } else {
-    // Reject
-  }
-}
-const makePromise = (text, delay) => {
-  return new Promise(resolve => {
-    setTimeout(() => resolve(text), delay);
-  });
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
+
+const refs = {
+  form: document.querySelector('.form'),
 };
 
-const promiseA = makePromise('promiseA value', 1000);
-const promiseB = makePromise('promiseB value', 3000);
+function createPromise(position, delay) {
+  return new Promise((resolve, reject) => {
+    const shouldResolve = Math.random() > 0.3;
 
-Promise.all([promiseA, promiseB])
-  .then(value => console.log(value)) // "promiseA value"
-  .catch(error => console.log(error));
+    if (shouldResolve) {
+      resolve({ position, delay }); // Fulfill
+    } else {
+      reject({ position, delay }); // Reject
+    }
+  });
+}
+
+refs.form.addEventListener('submit', hendleEventOnSubmit);
+
+function hendleEventOnSubmit(eve) {
+  eve.preventDefault();
+  const { delay, step, amount } = eve.currentTarget.elements;
+  let count = 1;
+
+  setTimeout(() => {
+    setInterval(() => {
+      if (amount.value >= count) {
+        createPromise(count, delay.value)
+          .then(({ position, delay }) => {
+            Notify.failure(`✅ Fulfilled promise ${position} in ${delay}ms`, {
+              timeout: 5000,
+            });
+          })
+          .catch(({ position, delay }) => {
+            Notify.failure(`❌ Rejected promise ${position} in ${delay}ms`, {
+              timeout: 5000,
+            });
+          });
+      }
+      count++;
+    }, step.value);
+  }, delay.value);
+}

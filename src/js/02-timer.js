@@ -10,6 +10,8 @@ const refs = {
   outSeconds: document.querySelector('[data-seconds]'),
 };
 
+let intervalId = 0;
+
 const options = {
   enableTime: true,
   time_24hr: true,
@@ -43,9 +45,10 @@ function validDateCheck(date) {
 function hendleEventClickOnStart(unix) {
   setAttributeOnTag();
 
-  setInterval(() => {
+  intervalId = setInterval(() => {
     const getUnixDate = Date.now();
     const subtractionValue = unix.getTime() - getUnixDate;
+    if (subtractionValue <= 1000) cleanIntervalID();
     const { days, hours, minutes, seconds } = convertMs(subtractionValue);
     refs.outDays.textContent = addLeadingZero(days);
     refs.outHours.textContent = addLeadingZero(hours);
@@ -81,4 +84,9 @@ function convertMs(ms) {
   const seconds = Math.floor((((ms % day) % hour) % minute) / second);
 
   return { days, hours, minutes, seconds };
+}
+
+/*-------------------- Iterval ID  cleaner ----------------------- */
+function cleanIntervalID() {
+  clearInterval(intervalId);
 }
