@@ -4,6 +4,11 @@ const refs = {
   form: document.querySelector('.form'),
 };
 
+let delayInp = null;
+let stepInp = null;
+let amountInp = null;
+let count = 1;
+
 function createPromise(position, delay) {
   return new Promise((resolve, reject) => {
     const shouldResolve = Math.random() > 0.3;
@@ -20,15 +25,20 @@ refs.form.addEventListener('submit', hendleEventOnSubmit);
 
 function hendleEventOnSubmit(eve) {
   eve.preventDefault();
+
   const { delay, step, amount } = eve.currentTarget.elements;
-  let count = 1;
+  delayInp = +delay.value;
+  stepInp = +step.value;
+  amountInp = +amount.value;
+
+  let intervalID = 0;
 
   setTimeout(() => {
-    setInterval(() => {
-      if (amount.value >= count) {
-        createPromise(count, delay.value)
+    intervalID = setInterval(() => {
+      if (amountInp >= count) {
+        createPromise(count, delayInp)
           .then(({ position, delay }) => {
-            Notify.failure(`✅ Fulfilled promise ${position} in ${delay}ms`, {
+            Notify.success(`✅ Fulfilled promise ${position} in ${delay}ms`, {
               timeout: 5000,
             });
           })
@@ -36,9 +46,20 @@ function hendleEventOnSubmit(eve) {
             Notify.failure(`❌ Rejected promise ${position} in ${delay}ms`, {
               timeout: 5000,
             });
+          })
+          .finally(() => {
+            if (amountInp < count) {
+              setIntervalID(intervalID);
+            }
           });
       }
       count++;
-    }, step.value);
-  }, delay.value);
+    }, stepInp);
+  }, delayInp);
+
+  eve.currentTarget.reset();
+}
+
+function setIntervalID(intervalID) {
+  clearInterval(intervalID);
 }
